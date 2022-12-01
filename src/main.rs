@@ -1,6 +1,6 @@
-//extern crate shared;
+mod util;
 mod day1;
-
 fn main() {
-    println!("{:?}", day1::solve(include_str!(r"C:\Users\mathh\source\repos\AdventOfCode2022\aoc_rust\input\day1.txt")));
+    let input = util::get_input(1);
+    println!("{:?}", day1::solve(&input));
 }
