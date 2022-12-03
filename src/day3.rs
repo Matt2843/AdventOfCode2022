@@ -13,7 +13,8 @@ pub fn solve(str: &str) -> (u32, u32) {
     let s1 = str.lines()
         .map(|l| l.split_at(l.len() / 2))
         .map(|(c1,c2)| &HashSet::<char>::from_iter(c1.chars()) & &HashSet::<char>::from_iter(c2.chars()))
-        .fold(0, |acc, x| acc + x.iter().fold(0, |ac, y| ac + priority(*y)));
+        .map(|x| x.iter().fold(0, |ac, y| ac + priority(*y)))
+        .sum();
     let s2 = str.lines()
         .chunks(3)
         .into_iter()
@@ -22,6 +23,7 @@ pub fn solve(str: &str) -> (u32, u32) {
             .reduce(|x, y| x.intersection(&y).copied().collect())
             .unwrap()
         )
-        .fold(0, |acc, x| acc + x.iter().fold(0, |acc, y| acc + priority(*y)));
+        .map(|x| x.iter().fold(0, |acc, y| acc + priority(*y)))
+        .sum();
     (s1, s2)
 }
