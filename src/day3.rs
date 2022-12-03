@@ -20,7 +20,7 @@ pub fn solve(str: &str) -> (u32, u32) {
         .into_iter()
         .map(|x| x
             .map(|y| HashSet::<char>::from_iter(y.chars())) // and reduce to a single set..
-            .reduce(|x, y| x.intersection(&y).copied().collect())
+            .reduce(|x, y| &x & &y)
             .unwrap()
         )
         .map(|x| x.iter().fold(0, |acc, y| acc + priority(*y)))
