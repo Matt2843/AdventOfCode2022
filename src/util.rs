@@ -1,19 +1,18 @@
 use std::io::{Read, Write};
-use reqwest::Error;
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
 use reqwest::redirect::Policy;
 use std::fs::OpenOptions;
 
-const PROJECT_ROOT: &'static str = env!("CARGO_MANIFEST_DIR");
+const PROJECT_ROOT: &str = env!("CARGO_MANIFEST_DIR");
 
-fn load_session() -> Result<HeaderValue, Error> {
+fn load_session() -> Result<HeaderValue, Box<dyn std::error::Error>> {
     let session_path = std::path::Path::new(PROJECT_ROOT).join(".aoc_session");
     if !session_path.exists() {
         panic!("no .aoc_session file found, can't download the input")
     }
-    let session = std::fs::read_to_string(session_path).unwrap();
-    Ok(HeaderValue::from_str(&format!("session={}", session)).unwrap())
+    let session = std::fs::read_to_string(session_path)?;
+    Ok(HeaderValue::from_str(&format!("session={}", session))?)
 }
 
 fn download_input(year: u32, day: u32, path: &std::path::PathBuf) {
@@ -53,5 +52,5 @@ pub fn get_input(year: u32, day: u32) -> String {
 
     let mut file = std::fs::File::open(path).unwrap();
     file.read_to_string(&mut input).unwrap();
-    return input;
+    input
 }
