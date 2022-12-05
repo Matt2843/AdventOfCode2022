@@ -2,20 +2,12 @@ use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-pub fn solve(str: &str) -> (String, String) {
-    let mut input_spl =
-        include_str!(r"C:\Users\mathh\source\repos\AdventOfCode2022\aoc_rust\input\2022-5.txt")
-            .split("\n\n");
-
+fn parse_stacks(first_in: &str) -> HashMap::<usize, VecDeque<char>> {
     let mut vecdeques = HashMap::new();
-
     for i in 0..9 {
         vecdeques.insert(i as usize, VecDeque::<char>::new());
     }
-
-    input_spl
-        .nth(0)
-        .unwrap()
+    first_in
         .split("\n")
         .map(|l| l.chars().chunks(4))
         .for_each(|x| {
@@ -28,11 +20,11 @@ pub fn solve(str: &str) -> (String, String) {
                     }
                 })
         });
+    vecdeques
+}
 
-    let moves = input_spl
-        .nth(0)
-        .unwrap()
-        .split("\n")
+fn parse_moves(input_two: &str) -> Vec<(usize, usize, usize)> {
+        input_two.split("\n")
         .map(|l| l.split_ascii_whitespace().collect_vec())
         .map(|l| {
             (
@@ -41,18 +33,38 @@ pub fn solve(str: &str) -> (String, String) {
                 l[5].parse::<usize>().unwrap(),
             )
         })
-        .collect_vec();
+        .collect_vec()
+}
 
+fn get_result(deques: HashMap<usize, VecDeque<char>>) -> String {
+    let mut s = String::new();
+    for i in 0..deques.len() {
+        if deques.get(&i).unwrap().is_empty() {
+            continue;
+        }
+        s.push(*deques.get(&i).unwrap().front().unwrap());
+    }
+    s
+}
+
+pub fn solve(str: &str) -> (String, String) {
+    let mut input_spl = str.split("\n\n");
+    let mut vecdeques = parse_stacks(input_spl.nth(0).unwrap());
+    let moves = parse_moves(input_spl.nth(0).unwrap());
+
+    let mut s2_deques = vecdeques.clone();
     for (quant, from, to) in moves {
-        for i in 0..quant {
-            let x = vecdeques.get_mut(&(from - 1)).unwrap().pop_back().unwrap();
-            vecdeques.get_mut(&(to - 1)).unwrap().push_back(x);
+        let mut z = Vec::<char>::new();
+        for _ in 0..quant {
+            let x = vecdeques.get_mut(&(from - 1)).unwrap().pop_front().unwrap();
+            let y = s2_deques.get_mut(&(from - 1)).unwrap().pop_front().unwrap();
+            vecdeques.get_mut(&(to - 1)).unwrap().push_front(x);
+            z.push(y);
+        }
+        z.reverse();
+        for i in 0..z.len() {
+            s2_deques.get_mut(&(to - 1)).unwrap().push_front(*z.get(i).unwrap());
         }
     }
-
-    let mut s = String::new();
-    for i in 0..9 {
-        s.push(*vecdeques.get(&i).unwrap().back().unwrap());
-    }
-    (s, "".to_string())
+    (get_result(vecdeques), get_result(s2_deques))
 }
