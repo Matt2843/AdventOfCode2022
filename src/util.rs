@@ -26,7 +26,7 @@ fn download_input(year: u32, day: u32, path: &std::path::PathBuf) {
         .build().unwrap();
     
     let input = client
-        .get(&format!("https://adventofcode.com/{year}/day/{day}/input"))
+        .get(format!("https://adventofcode.com/{year}/day/{day}/input"))
         .send()
         .and_then(|response| response.error_for_status())
         .and_then(|response| response.text())

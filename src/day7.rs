@@ -21,17 +21,17 @@ pub fn solve(str: &str) -> (usize, usize) {
     let (mut all, _) = str.lines()
         .into_iter()
         .fold((Vec::<usize>::new(), Vec::<usize>::new()), 
-            |(mut all, mut stack), line| {
-                if line == "$ cd .." {
-                    all.push(stack.pop().expect("empty stack!?"));
-                } else if line.starts_with("$ cd") {
-                    stack.push(0);
-                } else if line.starts_with(|c: char| c.is_numeric()) {
-                    let file_size: usize = line.split_ascii_whitespace().nth(0).unwrap().parse().unwrap();
-                    stack.iter_mut().for_each(|x| *x += file_size);
-                }
-                (all, stack)
-            });
+        |(mut all, mut stack), line| {
+            if line == "$ cd .." {
+                all.push(stack.pop().expect("empty stack!?"));
+            } else if line.starts_with("$ cd") {
+                stack.push(0);
+            } else if line.starts_with(|c: char| c.is_numeric()) {
+                let file_size: usize = line.split_ascii_whitespace().next().unwrap().parse().unwrap();
+                stack.iter_mut().for_each(|x| *x += file_size);
+            }
+            (all, stack)
+        });
     all.sort();
     let avail = 70000000 - all.last().unwrap();
     let needed = 40000000 - avail;
