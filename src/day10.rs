@@ -25,7 +25,6 @@ fn parse(str: &str) -> VecDeque<Instruction> {
 }
 
 fn eval_program(program: &mut VecDeque<Instruction>) -> (usize, [[char;40];6]) {
-    let cycle_checks = [20, 60, 100, 140, 180, 220];
     let mut img = [['.';40];6];
     let mut acc_signal_strength = 0;
     let mut x: i32 = 1;
@@ -36,7 +35,7 @@ fn eval_program(program: &mut VecDeque<Instruction>) -> (usize, [[char;40];6]) {
             img[cycle.div_euclid(img[0].len())][crt] = '#';
         }
         cycle += 1;
-        if cycle_checks.contains(&cycle) {
+        if cycle % 40 == 20 {
             acc_signal_strength += cycle as i32 * x;
         }
         match program.pop_front() {
