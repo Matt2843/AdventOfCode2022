@@ -18,8 +18,8 @@ impl Monkey {
         match monkey_gex.captures(info.as_str()) {
             Some(monkey) => {
                 let op = monkey.get(4).unwrap().as_str().split_once(' ').unwrap();
-                return Monkey {
-                    monkey_id: monkey.get(1).unwrap().as_str().parse::<usize>().unwrap(),
+                Monkey {
+                    monkey_id: monkey.get(1).unwrap().as_str().parse().unwrap(),
                     items: monkey.get(2).unwrap().as_str().split(", ").map(|item| item.parse::<usize>().unwrap())
                         .fold(VecDeque::new(), |mut acc, item| { 
                             acc.push_back(item);
@@ -32,7 +32,7 @@ impl Monkey {
                     inspection_count: 0,
                 }
             }
-            None => panic!("failed to capture monkey")
+            None => unreachable!()
         }
     }
 
@@ -59,7 +59,7 @@ impl Monkey {
                 worry_level = worry_level.div_euclid(3);
             }
             worry_level %= divisors_product;
-            if &worry_level % self.test.0 == 0 {
+            if worry_level % self.test.0 == 0 {
                 d_items.push((worry_level, self.test.1));
             } else {
                 d_items.push((worry_level, self.test.2));
@@ -91,7 +91,7 @@ pub fn solve(str: &str) -> (usize, usize) {
             acc
         });
     let divisors_product = monkeys.values()
-        .into_iter().map(|m| m.test.0.clone())
+        .into_iter().map(|m| m.test.0)
         .reduce(|x, y| x * y).unwrap();
     (slv(&mut monkeys.clone(), &divisors_product, true), slv(&mut monkeys, &divisors_product, false))
 }
