@@ -9,3 +9,4 @@ edition = "2021"
 #shared = { path="../shared" }
 itertools = "0.10.5"
 reqwest = { version="0.11.13", features = ["blocking"] }
+regex = "1.7.0"

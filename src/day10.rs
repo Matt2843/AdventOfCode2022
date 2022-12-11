@@ -25,7 +25,7 @@ fn parse(str: &str) -> VecDeque<Instruction> {
 }
 
 fn eval_program(program: &mut VecDeque<Instruction>) -> (usize, [[char;40];6]) {
-    let mut img = [['.';40];6];
+    let mut img = [[' ';40];6];
     let mut acc_signal_strength = 0;
     let mut x: i32 = 1;
     let mut cycle = 0;
