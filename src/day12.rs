@@ -1,6 +1,9 @@
+use itertools::Itertools;
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashSet};
-use itertools::Itertools;
+use std::rc::Rc;
+
+const DEBUG: bool = false;
 
 #[derive(Debug)]
 struct State {
@@ -8,7 +11,9 @@ struct State {
     h: usize,
     pos: (usize, usize),
     s: char,
+    parent: Option<Rc<State>>,
 }
+
 impl PartialOrd for State {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         let self_f = self.g + self.h;
@@ -16,16 +21,19 @@ impl PartialOrd for State {
         other_f.partial_cmp(&self_f)
     }
 }
+
 impl Ord for State {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
     }
 }
+
 impl PartialEq for State {
     fn eq(&self, other: &Self) -> bool {
         other.pos == self.pos
     }
 }
+
 impl Eq for State {}
 
 fn manhatten_dist(from: (usize, usize), to: (usize, usize)) -> usize {
@@ -34,7 +42,7 @@ fn manhatten_dist(from: (usize, usize), to: (usize, usize)) -> usize {
     dx + dy
 }
 
-fn neighbours(state: &State, arr: &[Vec<char>], end: (usize, usize)) -> Vec<State> {
+fn neighbours(state: Rc<State>, arr: &[Vec<char>], end: (usize, usize)) -> Vec<Rc<State>> {
     let mut res = Vec::new();
     let directions = [(1, 0), (-1, 0), (0, -1), (0, 1)];
     for d in directions {
@@ -42,12 +50,14 @@ fn neighbours(state: &State, arr: &[Vec<char>], end: (usize, usize)) -> Vec<Stat
         if dx < 0 || dx >= arr.len() as i32 || dy < 0 || dy >= arr[0].len() as i32 {
             continue;
         }
-        if arr[dx as usize][dy as usize] as i32 - state.s as i32 <= 1
-        {
-            res.push(State { g: state.g + 1, pos: (dx as usize, dy as usize),
+        if arr[dx as usize][dy as usize] as i32 - state.s as i32 <= 1 {
+            res.push(Rc::new(State {
+                g: state.g + 1,
+                pos: (dx as usize, dy as usize),
                 s: arr[dx as usize][dy as usize],
                 h: manhatten_dist((dx as usize, dy as usize), end),
-            });
+                parent: Some(state.clone()),
+            }));
         }
     }
     res
@@ -69,7 +79,10 @@ fn find_char_indices(arr: &[Vec<char>], chr: char) -> Vec<(usize, usize)> {
 }
 
 fn parse(str: &str) -> (Map, Vec<(usize, usize)>) {
-    let mut arr = str.lines().map(|l| l.trim().chars().collect_vec()).collect_vec();
+    let mut arr = str
+        .lines()
+        .map(|l| l.trim().chars().collect_vec())
+        .collect_vec();
     let start = *find_char_indices(&arr, 'S').first().unwrap();
     let goal = *find_char_indices(&arr, 'E').first().unwrap();
     arr[start.0][start.1] = 'a';
@@ -78,20 +91,52 @@ fn parse(str: &str) -> (Map, Vec<(usize, usize)>) {
     (Map { arr, start, goal }, a_vec)
 }
 
+fn print_map(map: &Map, path: Option<&Vec<(usize, usize)>>) {
+    let mut map_clone = map.clone();
+    if let Some(p) = path {
+        for pos in p {
+            map_clone.arr[pos.0][pos.1] = ' ';
+        }
+    }
+    for x in map_clone.arr.iter() {
+        for y in x.iter() {
+            print!("{}", y);
+        }
+        println!();
+    }
+}
+
+fn retrace_path(state: Rc<State>) -> Vec<(usize, usize)> {
+    let mut path = Vec::new();
+    path.push(state.pos);
+    let mut cur_state = state;
+    while let Some(parent) = cur_state.parent.clone() {
+        cur_state = parent;
+        path.push(cur_state.pos);
+    }
+    path
+}
+
 fn a_star(map: &Map) -> Option<usize> {
-    let start = State { g: 0, pos: map.start, 
+    let start = Rc::new(State {
+        g: 0,
+        pos: map.start,
         s: map.arr[map.start.0][map.start.1],
         h: manhatten_dist(map.start, map.goal),
-    };
-    let mut pq: BinaryHeap<State> = BinaryHeap::new();
+        parent: None,
+    });
+    let mut pq: BinaryHeap<Rc<State>> = BinaryHeap::new();
     pq.push(start);
     let mut explored = HashSet::new();
     while !pq.is_empty() {
         let current_state = pq.pop().unwrap();
         if current_state.pos == map.goal {
+            if DEBUG {
+                print_map(map, Some(&retrace_path(current_state.clone())));
+            }
             return Some(current_state.g);
         }
-        for n in neighbours(&current_state, &map.arr, map.goal) {
+        for n in neighbours(current_state.clone(), &map.arr, map.goal) {
             if !explored.contains(&n.pos) {
                 pq.push(n);
             }
@@ -104,12 +149,15 @@ fn a_star(map: &Map) -> Option<usize> {
 pub fn solve(str: &str) -> (usize, usize) {
     let (map, a_vec) = parse(str);
     let s1 = a_star(&map).unwrap();
-    let s2 = a_vec.iter()
+    let s2 = a_vec
+        .iter()
         .map(|s| {
             let mut new_map = map.clone();
             new_map.start = *s;
             new_map
-        }).map(|m| a_star(&m).unwrap())
-        .min().unwrap();
+        })
+        .map(|m| a_star(&m).unwrap())
+        .min()
+        .unwrap();
     (s1, s2)
 }
