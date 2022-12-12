@@ -66,7 +66,7 @@ fn neighbours(state: Rc<State>, arr: &[Vec<char>], end: (usize, usize)) -> Vec<R
 #[derive(Clone)]
 struct Map {
     arr: Vec<Vec<char>>,
-    start: (usize, usize),
+    starts: Vec<Rc<State>>,
     goal: (usize, usize),
 }
 
@@ -78,7 +78,7 @@ fn find_char_indices(arr: &[Vec<char>], chr: char) -> Vec<(usize, usize)> {
         .collect()
 }
 
-fn parse(str: &str) -> (Map, Vec<(usize, usize)>) {
+fn parse(str: &str, extend_as: bool) -> Map {
     let mut arr = str
         .lines()
         .map(|l| l.trim().chars().collect_vec())
@@ -87,8 +87,24 @@ fn parse(str: &str) -> (Map, Vec<(usize, usize)>) {
     let goal = *find_char_indices(&arr, 'E').first().unwrap();
     arr[start.0][start.1] = 'a';
     arr[goal.0][goal.1] = 'z';
-    let a_vec = find_char_indices(&arr, 'a');
-    (Map { arr, start, goal }, a_vec)
+    let mut starts = vec![start];
+    if extend_as {
+        starts.extend(find_char_indices(&arr, 'a'));
+    }
+    Map {
+        arr,
+        starts: starts
+            .iter()
+            .map(|s| Rc::new(State {
+                g: 0,
+                h: manhatten_dist(*s, goal),
+                pos: *s,
+                s: 'a',
+                parent: None,
+            }))
+            .collect_vec(),
+        goal,
+    }
 }
 
 fn print_map(map: &Map, path: Option<&Vec<(usize, usize)>>) {
@@ -118,15 +134,10 @@ fn retrace_path(state: Rc<State>) -> Vec<(usize, usize)> {
 }
 
 fn a_star(map: &Map) -> Option<usize> {
-    let start = Rc::new(State {
-        g: 0,
-        pos: map.start,
-        s: map.arr[map.start.0][map.start.1],
-        h: manhatten_dist(map.start, map.goal),
-        parent: None,
-    });
     let mut pq: BinaryHeap<Rc<State>> = BinaryHeap::new();
-    pq.push(start);
+    for x in map.starts.clone() {
+        pq.push(x);
+    }
     let mut explored = HashSet::new();
     while !pq.is_empty() {
         let current_state = pq.pop().unwrap();
@@ -147,17 +158,7 @@ fn a_star(map: &Map) -> Option<usize> {
 }
 
 pub fn solve(str: &str) -> (usize, usize) {
-    let (map, a_vec) = parse(str);
-    let s1 = a_star(&map).unwrap();
-    let s2 = a_vec
-        .iter()
-        .map(|s| {
-            let mut new_map = map.clone();
-            new_map.start = *s;
-            new_map
-        })
-        .map(|m| a_star(&m).unwrap())
-        .min()
-        .unwrap();
+    let s1 = a_star(&parse(str, false)).unwrap();
+    let s2 = a_star(&parse(str, true)).unwrap();
     (s1, s2)
 }
