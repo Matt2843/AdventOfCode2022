@@ -1,3 +1,4 @@
+use core::panic;
 use std::io::{Read, Write};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
@@ -41,11 +42,17 @@ fn download_input(year: u32, day: u32, path: &std::path::PathBuf) {
         .map_err(|err| format!("Failed to write to file: {}", err)).unwrap();
 }
 
-pub fn get_input(year: u32, day: u32) -> String {
-    let path = std::path::Path::new(PROJECT_ROOT).join("input").join(format!("{year}-{day}.txt"));
-
+pub fn get_input(year: u32, day: u32, ex: bool) -> String {
+    let mut filename = format!("{year}-{day}.txt");
+    if ex {
+        filename = format!("{year}-{day}-ex.txt")
+    }
+    let path = std::path::Path::new(PROJECT_ROOT).join("input").join(&filename);
     let mut input = String::new();
     if !path.exists() {
+        if ex {
+            panic!("tried to load example, but it doens't live: {filename}")
+        }
         println!("file-missing, downloading input..");
         download_input(year, day, &path);
     }
