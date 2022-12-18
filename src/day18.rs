@@ -26,13 +26,13 @@ fn bfs_trapped_in_n(input: &AHashSet<(i64, i64, i64)>, (x,y,z): (i64, i64, i64),
 
 const DIRECTIONS: [(i64,i64,i64);6] = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)];
 fn surface_area(input: &AHashSet<(i64, i64, i64)>) -> usize {
-    input.iter().cloned()
+    input.iter()
         .flat_map(|(x, y, z)| DIRECTIONS.iter().map(move |(dx, dy, dz)| (x + dx, y + dy, z + dz)))
         .filter(|cube| !input.contains(cube))
         .count()
 }
 fn surface_area_edge(input: &AHashSet<(i64, i64, i64)>, n: usize) -> usize {
-    input.iter().cloned()
+    input.iter()
         .flat_map(|(x, y, z)| DIRECTIONS.iter().map(move |(dx, dy, dz)| (x + dx, y + dy, z + dz)))
         .filter(|cube| !bfs_trapped_in_n(input, *cube, n))
         .count()
