@@ -1,6 +1,7 @@
-use std::collections::{BTreeSet, HashMap, BTreeMap};
+use std::collections::{BTreeSet, HashMap};
 use itertools::Itertools;
 use regex::Regex;
+use ahash::AHashMap;
 
 fn parse(str: &str) -> (HashMap<String, usize>, HashMap<String, Vec<String>>) {
     let valve_gex = Regex::new(r"^Valve\s(\w{2}).*?=(\d+).*?valves?\s((\w{2},?\s?)+)$").unwrap();
@@ -21,7 +22,7 @@ fn parse(str: &str) -> (HashMap<String, usize>, HashMap<String, Vec<String>>) {
         })
 }
 
-fn brute_force(cache: &mut BTreeMap<(String, usize, BTreeSet<String>, bool), usize>,
+fn brute_force(cache: &mut AHashMap<(String, usize, BTreeSet<String>, bool), usize>,
     flow_rates: &HashMap<String,usize>, connections: &HashMap<String, Vec<String>>, 
     id: &String, remaining: usize, opened_valves: &BTreeSet<String>, let_elephant: bool) -> usize 
 {
@@ -52,6 +53,6 @@ fn brute_force(cache: &mut BTreeMap<(String, usize, BTreeSet<String>, bool), usi
 
 pub fn solve(str: &str) -> (usize, usize) {
     let (flow_rates, connections) = parse(str);
-    (brute_force(&mut BTreeMap::new(), &flow_rates, &connections,&"AA".to_string(), 30, &mut BTreeSet::new(), false),
-    brute_force(&mut BTreeMap::new(), &flow_rates, &connections,&"AA".to_string(), 26, &mut BTreeSet::new(), true))
+    (brute_force(&mut AHashMap::new(), &flow_rates, &connections,&"AA".to_string(), 30, &mut BTreeSet::new(), false),
+    brute_force(&mut AHashMap::new(), &flow_rates, &connections,&"AA".to_string(), 26, &mut BTreeSet::new(), true))
 }
