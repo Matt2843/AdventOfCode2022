@@ -2,6 +2,7 @@ use ahash::AHashSet;
 use std::collections::VecDeque;
 use itertools::Itertools;
 
+const DIRECTIONS: [(i64,i64,i64);6] = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)];
 fn bfs_trapped_in_n(input: &AHashSet<(i64, i64, i64)>, (x,y,z): (i64, i64, i64), n: usize) -> bool {
     let mut queue = VecDeque::new();
     let mut explored = AHashSet::new();
@@ -13,18 +14,13 @@ fn bfs_trapped_in_n(input: &AHashSet<(i64, i64, i64)>, (x,y,z): (i64, i64, i64),
         if explored.len() > n {
             return false;
         }
-        queue.push_back((x+1,y,z));
-        queue.push_back((x-1,y,z));
-        queue.push_back((x,y+1,z));
-        queue.push_back((x,y-1,z));
-        queue.push_back((x,y,z+1));
-        queue.push_back((x,y,z-1));
+        for (dx, dy, dz) in DIRECTIONS {
+            queue.push_back((x+dx, y+dy, z+dz));
+        }
         explored.insert((x,y,z));
     }
     true
 }
-
-const DIRECTIONS: [(i64,i64,i64);6] = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)];
 fn surface_area(input: &AHashSet<(i64, i64, i64)>) -> usize {
     input.iter()
         .flat_map(|(x, y, z)| DIRECTIONS.iter().map(move |(dx, dy, dz)| (x + dx, y + dy, z + dz)))
