@@ -117,7 +117,7 @@ impl Ord for State {
     }
 }
 
-fn quality_score(blueprint: &BluePrint, minutes_lim: usize, sample_size: Option<usize>) -> usize {
+fn quality_score(blueprint: &BluePrint, minutes_lim: usize, sample_size: Option<usize>, pt1: bool) -> usize {
     let mut frontier = BinaryHeap::new();
     let mut max_yield = 0;
     let mut max_yield_sampled = 0;
@@ -156,9 +156,9 @@ fn quality_score(blueprint: &BluePrint, minutes_lim: usize, sample_size: Option<
         }
         explored.insert(cur_state);
     }
-    match sample_size {
-        Some(_) => max_yield * blueprint.id,
-        None => max_yield * blueprint.id
+    match pt1 {
+        true => max_yield * blueprint.id,
+        false => max_yield
     }
 }
 
@@ -180,12 +180,12 @@ fn parse(str: &str) -> Vec<BluePrint> {
 pub fn solve(str: &str) -> (usize, usize) {
     let parsed = parse(str);
     let s1 = parsed.iter()
-        .map(|bp| quality_score(bp, 24, None))
+        .map(|bp| quality_score(bp, 24, None, true))
         .inspect(|ql| println!("quality-score: {:?}", ql))
         .sum();
     let s2 = parsed.iter()
         .take(3)
-        .map(|bp| quality_score(bp, 32, Some(100_000_000)))
+        .map(|bp| quality_score(bp, 32, Some(100_000_000), false))
         .inspect(|ql| println!("max-yield: {:?}", ql))
         .reduce(|x, y| x * y).unwrap();
     (s1, s2)
