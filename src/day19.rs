@@ -1,6 +1,7 @@
 use ahash::AHashSet;
 use itertools::Itertools;
 use std::collections::BinaryHeap;
+use rayon::{*, prelude::{IntoParallelRefIterator, ParallelIterator, IndexedParallelIterator}};
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct Inventory {
@@ -65,7 +66,7 @@ impl State {
     fn heuristic(&self) -> usize {
         let mut h = self.inventory.geode.0 + self.inventory.obsidian.0 + self.inventory.clay.0 + self.inventory.ore.0; 
         if self.bought_robot {
-            h += 1;
+            h += 2;
         }
         h
     }
@@ -162,12 +163,12 @@ fn parse(str: &str) -> Vec<BluePrint> {
 
 pub fn solve(str: &str) -> (usize, usize) {
     let parsed = parse(str);
-    let s1 = parsed.iter()
+    let s1 = parsed.par_iter()
         .map(|bp| quality_score(bp, 24, Some(3), true))
         .sum();
-    let s2 = parsed.iter()
+    let s2 = parsed.par_iter()
         .take(3)
         .map(|bp| quality_score(bp, 32, Some(3), false))
-        .reduce(|x, y| x * y).unwrap();
+        .reduce(|| 1, |x,y| x*y);
     (s1, s2)
 }

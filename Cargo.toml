@@ -10,4 +10,5 @@ edition = "2021"
 itertools = "0.10.5"
 reqwest = { version="0.11.13", features = ["blocking"] }
 regex = "1.7.0"
+rayon = "1.6.1"
 ahash = "0.8.2"
