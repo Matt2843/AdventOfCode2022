@@ -55,7 +55,7 @@ fn parse(str: &str) -> AHashMap<String, Monkey> {
 }
 
 fn eval(name: &String, map: &AHashMap<String, Monkey>) -> i64 {
-    let val = match &map[name].action {
+    match &map[name].action {
         Action::Yell(v) => *v,
         Action::Calc((lhs, op, rhs)) => {
             let lhs = lhs.parse::<i64>().unwrap_or(eval(lhs, map));
@@ -68,8 +68,7 @@ fn eval(name: &String, map: &AHashMap<String, Monkey>) -> i64 {
                 Operation::Divide => lhs / rhs,
             }
         }
-    };
-    val
+    }
 }
 
 fn binary_search_yell(monkeys: &mut AHashMap<String, Monkey>) -> usize {
