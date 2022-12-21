@@ -1,6 +1,6 @@
 mod util;
-mod day20;
+mod day21;
 fn main() {
-    let input = util::get_input(2022, 20, false);
-    println!("{:?}", day20::solve(&input));
+    let input = util::get_input(2022, 21, false);
+    println!("{:?}", day21::solve(&input));
 }
