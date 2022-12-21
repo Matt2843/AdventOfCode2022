@@ -54,14 +54,14 @@ fn parse(str: &str) -> AHashMap<String, Monkey> {
     monkeys
 }
 
-fn eval(name: &String, map: &AHashMap<String, Monkey>) -> i64 {
+fn eval(name: &String, map: &AHashMap<String, Monkey>, probe: bool) -> i64 {
     match &map[name].action {
         Action::Yell(v) => *v,
         Action::Calc((lhs, op, rhs)) => {
-            let lhs = lhs.parse::<i64>().unwrap_or(eval(lhs, map));
-            let rhs = rhs.parse::<i64>().unwrap_or(eval(rhs, map));
+            let lhs = lhs.parse::<i64>().unwrap_or(eval(lhs, map, probe));
+            let rhs = rhs.parse::<i64>().unwrap_or(eval(rhs, map, probe));
             match *op {
-                Operation::Equal => lhs,
+                Operation::Equal => if probe {rhs} else {lhs},
                 Operation::Plus => lhs + rhs,
                 Operation::Minus => lhs - rhs,
                 Operation::Multiply => lhs * rhs,
@@ -78,8 +78,9 @@ fn binary_search_yell(monkeys: &mut AHashMap<String, Monkey>) -> usize {
         _ => unreachable!()
     }
     monkeys.insert(root.name.clone(), root);
+    let cmp_val = eval(&"root".to_string(), &monkeys, true);
     let mut low = 0i64;
-    let mut high = 100_000_000_000_000i64;
+    let mut high= 100_000_000_000_000i64;
     loop {
         let yell = (low + high) / 2;
         let mut nxt_monkey = monkeys[&"humn".to_string()].clone();
@@ -90,8 +91,8 @@ fn binary_search_yell(monkeys: &mut AHashMap<String, Monkey>) -> usize {
             _ => unreachable!()
         }
         monkeys.insert(nxt_monkey.name.clone(), nxt_monkey);
-        let x = eval(&"root".to_string(), &monkeys);
-        match x.cmp(&23622695042414) {
+        let x = eval(&"root".to_string(), &monkeys, false);
+        match x.cmp(&cmp_val) {
             Ordering::Less => high = yell + 1,
             Ordering::Greater => low = yell - 1,
             Ordering::Equal => { return yell as usize; }
@@ -101,6 +102,6 @@ fn binary_search_yell(monkeys: &mut AHashMap<String, Monkey>) -> usize {
 
 pub fn solve(str: &str) -> (usize, usize) {
     let mut monkeys = parse(str);
-    let s1 = eval(&"root".to_string(), &monkeys);
+    let s1 = eval(&"root".to_string(), &monkeys, false);
     (s1 as usize, binary_search_yell(&mut monkeys))
 }
