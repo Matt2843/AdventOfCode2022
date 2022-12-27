@@ -80,13 +80,12 @@ fn empty_spaces(goblins: &AHashSet<Goblin>) -> usize {
 
 fn move_gobs(goblins: &mut AHashSet<Goblin>, iterations: usize) -> usize {
     let mut moves = VecDeque::from([move_north, move_south, move_west, move_east]);
-    let mut d_moves = VecDeque::from(["NORTH", "SOUTH", "WEST", "EAST"]);
     let mut kappa = 0;
     for _ in 0..iterations {
         kappa += 1;
         let mut proposed_moves = AHashMap::<Goblin, Vec<Goblin>>::new();
         for gob in goblins.iter().filter(|g| has_adjacent_goblins(g, goblins)) {
-            if let Some(m_gob) = moves.iter().flat_map(|m| m(gob, &goblins)).next() {
+            if let Some(m_gob) = moves.iter().flat_map(|m| m(gob, goblins)).next() {
                 proposed_moves
                     .entry(m_gob)
                     .and_modify(|gobs| gobs.push(*gob))
@@ -101,7 +100,6 @@ fn move_gobs(goblins: &mut AHashSet<Goblin>, iterations: usize) -> usize {
             goblins.insert(*m_gob);
         }
         moves.rotate_left(1);
-        d_moves.rotate_left(1);
     }
     empty_spaces(goblins)
 }
